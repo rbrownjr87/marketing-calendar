@@ -115,6 +115,49 @@
   </style>
 </head>
 <body>
+  <header>
+  <img src="https://jacobsfs.com/wp-content/uploads/2025/04/JFS-Logo-Final-Silver-Font.png" alt="Jacobs Financial Services Logo">
+  <h2>📺 Jacobs Financial Production Calendar</h2>
+</header>
+
+<form id="eventForm">
+  <label for="station">TV Station:</label>
+  <select id="station" required>
+    <option value="WOOD TV8">WOOD TV8</option>
+    <option value="WZZM13">WZZM13</option>
+    <option value="WLNS">WLNS</option>
+    <option value="WDIV">WDIV</option>
+    <option value="AARP">AARP</option>
+  </select>
+
+  <label for="eventType">Event Type:</label>
+  <select id="eventType" required>
+    <option value="TV Segment">TV Segment</option>
+    <option value="Commercial">Commercial</option>
+    <option value="In-Studio Recording">In-Studio Recording</option>
+  </select>
+
+  <div id="segmentDetailContainer">
+    <label for="segmentDetail">TV Segment Name:</label>
+    <select id="segmentDetail">
+      <option value="EightWest">EightWest</option>
+      <option value="AARP">AARP</option>
+      <option value="Live in the D">Live in the D</option>
+      <option value="6 in the City">6 in the City</option>
+    </select>
+  </div>
+
+  <label for="date">Date:</label>
+  <input type="date" id="date" required>
+
+  <label for="time">Time:</label>
+  <input type="time" id="time" required>
+
+  <button type="submit">Add Event</button>
+</form>
+
+<div id="calendar"></div>
+
 <!-- header and form remain unchanged -->
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
 <script>
