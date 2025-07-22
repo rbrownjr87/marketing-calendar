@@ -1,11 +1,9 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script type="module" src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
   <meta charset="utf-8" />
   <title>Marketing Calendar</title>
-    <link href="https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/main.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
   <style>
     body {
@@ -164,13 +162,10 @@
 </div>
 <div id="calendar"></div>
 
-
-<script type="module">
-  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
-  import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
-  import { Calendar } from 'https://cdn.jsdelivr.net/npm/@fullcalendar/core@6.1.8/index.js';
-  import dayGridPlugin from 'https://cdn.jsdelivr.net/npm/@fullcalendar/daygrid@6.1.8/index.js';
-
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
   const firebaseConfig = {
     apiKey: "AIzaSyDPWsWzr9GvkCfb6MVSZSzgcB1HIjvUmoU",
     authDomain: "jfsmarketingcalendar.firebaseapp.com",
@@ -179,17 +174,11 @@
     messagingSenderId: "969763344272",
     appId: "1:969763344272:web:494c32513504ba7814ad15"
   };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-  const eventsCol = collection(db, 'events');
-
-  const snapshot = await getDocs(eventsCol);
-  const firebaseEvents = snapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }));
-
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
   const calendarEl = document.getElementById('calendar');
-  const calendar = new Calendar(calendarEl, {
-    plugins: [dayGridPlugin],
+  const calendar = new FullCalendar.Calendar(calendarEl, {
+    plugins: [FullCalendar.dayGridPlugin],
     initialView: 'dayGridMonth',
     editable: true,
     selectable: true,
@@ -201,7 +190,7 @@
       const action = prompt("Type 'edit' to rename or 'delete' to remove this event:", "edit");
       if (action === 'delete') {
         if (confirm(`Are you sure you want to delete "${info.event.title}"?`)) {
-          await deleteDoc(doc(db, 'events', info.event.id));
+          await db.collection("events").doc(info.event.id).delete();
           info.event.remove();
         }
       } else if (action === 'edit') {
@@ -209,18 +198,20 @@
         if (newTitle !== null) {
           info.event.setProp("title", newTitle);
           info.el.setAttribute("data-full-title", newTitle);
-          const eventDoc = doc(db, 'events', info.event.id);
-          await updateDoc(eventDoc, { title: newTitle });
+          await db.collection("events").doc(info.event.id).update({ title: newTitle });
         }
       }
     }
   });
 
-  firebaseEvents.forEach(event => {
-    calendar.addEvent({ title: event.title, start: event.start, allDay: false, id: event.id });
+  db.collection("events").get().then(snapshot => {
+    snapshot.forEach(doc => {
+      const event = doc.data();
+      event.id = doc.id;
+      calendar.addEvent(event);
+    });
+    calendar.render();
   });
-
-  calendar.render();
 
   const form = document.getElementById('eventForm');
   const station = document.getElementById('station');
@@ -252,8 +243,8 @@
         start: dateTime,
         allDay: false
       };
-      const eventRef = await addDoc(eventsCol, newEvent);
-      newEvent.id = eventRef.id;
+      const docRef = await db.collection("events").add(newEvent);
+      newEvent.id = docRef.id;
       calendar.addEvent(newEvent);
       form.reset();
       segmentDetailContainer.style.display = 'none';
